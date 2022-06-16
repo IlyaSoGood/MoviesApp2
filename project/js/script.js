@@ -11,64 +11,71 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
     const adv = document.querySelectorAll('.promo__adv img'),
-          poster = document.querySelector('.promo__bg'),
-          genre = poster.querySelector('.promo__genre'),
-          movieList = document.querySelector('.promo__interactive-list'),
-          btn = document.querySelector('.add button'),
-          input = document.querySelector('.add .adding__input'),
-          checkbox = input.nextElementSibling.nextElementSibling;
-    let base = movieDB.movies,
-        arrDeleteByElements = [];
-    
-    adv.forEach(item => {
-        item.remove();
+            poster = document.querySelector('.promo__bg'),
+            genre = poster.querySelector('.promo__genre'),
+            movieList = document.querySelector('.promo__interactive-list'),
+            addForm = document.querySelector('form.add'),
+            addInput = addForm.querySelector('.adding__input'),
+            checkbox = addForm.querySelector('[type="checkbox"]');
+
+    let base = movieDB.movies;
+
+    const deleteAdv = (arr) => {
+        arr.forEach(item => {
+            item.remove();
+        });
+    };
+
+    const makeChanges = () => {
+        genre.textContent = 'Драма';
+        poster.style.backgroundImage = 'url("img/bg.jpg")';
+    };
+
+    const sortArr = (arr) => {
+        arr.sort();
+    };
+
+    addForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        let newFilm = addInput.value;
+        const favorite = checkbox.checked;
+        
+        if (newFilm) {
+            movieDB.movies.push(newFilm);
+            sortArr(base);
+            creatingFilmList(base, movieList);     
+            
+            if (favorite) {
+                console.log("Добавляем любимый фильм");
+            }
+        }
+        event.target.reset();
     });
-    genre.textContent = 'Драма';
-    poster.style.backgroundImage = 'url("img/bg.jpg")';
-    
-    function creatingFilmList (a, callback) {
-        base.sort();
-        movieList.innerHTML = "";
-        base.forEach(function(film, i) {
-            movieList.innerHTML += `
+
+    function creatingFilmList (films, parent) {
+        parent.innerHTML = "";
+        sortArr(films);
+
+        films.forEach(function(film, i) {
+            parent.innerHTML += `
                 <li class="promo__interactive-item">${i + 1}. ${film.length > 21 ? film.slice(0, 21)+'...' : film}
                     <div class="delete"></div>
                 </li>`;
         });
-        callback(); 
-    }
-    function sub () {
-        arrDeleteByElements = document.querySelectorAll('.promo__interactive-list .delete');
-        base.forEach(function(film, i) {
-            let deleteFunction = function() {
-                console.log(base);
-                delete(base[i]);
-                base.sort();
-                base.pop();
-                creatingFilmList(null, function() {
-                    console.log(base);
-                    arrDeleteByElements = document.querySelectorAll('.promo__interactive-list .delete');
-                    base.forEach(function(film, i) {
-                        arrDeleteByElements[i].addEventListener('click', deleteFunction);
-                    });
-                });
-            };
-            arrDeleteByElements[i].addEventListener('click', deleteFunction);
-            console.log(arrDeleteByElements);
+
+        document.querySelectorAll('.delete').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                btn.parentElement.remove();
+                base.splice(i, 1);
+
+                creatingFilmList(films, parent);
+            });
         });
-        console.log(base);
     }
-    creatingFilmList (null, sub);
-    
-    function addingFilm () {
-        event.preventDefault();
-        if (input.value) {
-            base.push(input.value);
-            creatingFilmList (null, sub);
-            if (checkbox.checked == true) {
-                console.log('Добавляем любимый фильм');
-            }
-        }
-    }
-    btn.addEventListener('click', addingFilm);
+
+    deleteAdv(adv);
+    makeChanges();
+    sortArr(base);
+    creatingFilmList(base, movieList);
 });
